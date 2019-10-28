@@ -32,7 +32,7 @@ for x in archivos:
 
 path = "/Users/andalval/Desktop/prueba datalicit/13. SECRETARIA DE EDUCACION DEL DISTRITO SED-LP-REDP-073-2019/Imagenes para analizar/"
 archivos = [f for f in listdir(path) if isfile(join(path, f))]
-palabra="presupuesto"
+palabra="presupuesto oficial"
 pytesseract.pytesseract.tesseract_cmd = r'/usr/local/Cellar/tesseract/4.1.0/bin/tesseract'
 # Abrimos la imagen
 for x in archivos:
