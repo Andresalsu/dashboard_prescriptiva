@@ -150,4 +150,3 @@ Werkzeug==0.16.0
 wget==3.2
 wrapt==1.11.2
 xlrd==1.2.0
-xlwt==1.3.0
