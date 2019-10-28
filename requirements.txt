@@ -87,7 +87,7 @@ pathos==0.2.5
 pdf2image==1.8.0
 pexpect==4.7.0
 pickleshare==0.7.5
-Pillow==6.1.0
+Pillow==6.2.0
 post==2019.4.13
 pox==0.2.7
 ppft==1.6.6.1
