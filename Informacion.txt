@@ -1,0 +1,32 @@
+Scraper de tweets
+
+El scraper de tweets es un programa que permite extraer tweets en base a ciertos parametros que se ingresan al sistema.
+El scraper se adapto en base al git de Jefferson-Enrique, cuya fuente es la siguiente: https://github.com/Jefferson-Henrique/GetOldTweets-python
+Para mas informacion se puede consultar el archivo README.MD que se encuentra en esta misma carpeta.
+
+El scraper toma parametros de entrada como palabra clave, hashtag clave, usuario clave, fecha de busqueda, lugar de busqueda, etc.
+Estos parametros son ingresados via json a traves del archivo app.py o mediante un comando del sistema como se explica en el archivo
+README anteriormente mencionado. Una vez ingresados, el scraper busca tweets en un lapso de tiempo de 1 semana con los datos suministrados. 
+Para ello, el script utiliza la url de busqueda de Twitter (referenciada en el script de got3/manager/TwitterManager.py, linea 95) e 
+ingresa los parametros de busqueda siguiendo su patron de funcionamiento. Una vez que los busca, los clasifica utilizando las librerias 
+TextBlob (creada por Google) y Classifier (creada por aylliote, fuente: https://github.com/aylliote/senti-py).
+
+Los tweets son clasificados por rangos de 0 a 1 (en el caso de TextBlob) o de -1 a 1 (en el caso de Classifier). La diferencia se da al momento
+de obtener el tweet, pues si el tweet esta en español, se utiliza la libreria Classifier; en caso contrario, se utiliza TextBlob al tener 
+mas lenguages de soporte. Los tweets se clasifican en 5 categorias: Muy positivo, Tendencia positiva, Neutral, Tendencia negativa y Muy negativo.
+
+Una vez se clasifican, se guardan en un archivo CSV (Comma Separate Value) cuyo nombre se compone de los parametros de bsuqueda ingresados.
+Dentro de este, se guardan los siguientes datos:
+
+-username: El usuario que publica el tweet. Los caracteres especiales son retirados de este campo.
+-date: Fecha y hora del tweet.
+-retweets: Cantidad de retweets que el tweet tiene.
+-favorites: Cantidad de favoritos (me gusta) que el tweet posee.
+-text: Texto del tweet. Los caracteres especiales son retirados de este campo.
+-geo: Localizacion del usuario, actualmente deshabilitado debido a las politicas de Twitter sobre la geolocalizacion.
+-mentions: Menciones de otros usuarios en el tweet. Los caracteres especiales son retirados de este campo.
+-hashtags: Hashtags dentro del tweet. Los caracteres especiales son retirados de este campo.
+-id: Id del tweet asignado por Twitter.
+-permalink: Link del tweet.
+-sentimiento: Valor numerico asignado por las librerias de clasificacion de sentimientos.
+-rango: Categoria asginada al tweet en base a su sentimiento.

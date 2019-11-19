@@ -98,13 +98,23 @@ def insertar():
 
     cur = conn.cursor()
 
-    sqlquery = "INSERT INTO usuario(nombre, correo, password, id)VALUES (" + "'" + \
-        nombres+"'"+"," + "'"+correos+"'" + ","+"'" + passwords+"'"+", default);"
+    sqlquery = "select usuario.id from usuario where usuario.correo="+"'"+correos+"'"+";"
     cur.execute(sqlquery)
-    conn.commit()
-    cur.close()
-    conn.close()
-    return jsonify({"Value": "succes"})
+
+    row=cur.fetchone()
+
+    if not row:
+        sqlquery = "INSERT INTO usuario(nombre, correo, password, id)VALUES (" + "'" + \
+            nombres+"'"+"," + "'"+correos+"'" + ","+"'" + passwords+"'"+", default);"
+        cur.execute(sqlquery)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"Value": "success"})
+    else:
+        cur.close()
+        conn.close()
+        return jsonify({"Value": "failed"})
 
 ##--------------------------Insertar Archivo en base de datos------------------#
 ##Inserta el nombre del archivo asociado al usuario
@@ -121,6 +131,7 @@ def insertarArchivo():
     conn = psycopg2.connect(connstr)
 
     cur = conn.cursor()
+
     sqlquery = "select usuario.id from usuario where usuario.nombre="+"'"+nombres+"'"+";"
     cur.execute(sqlquery)
 
