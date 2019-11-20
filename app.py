@@ -5,7 +5,7 @@ from flask_cors import CORS, cross_origin
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from pruebasistema import buscarTweets
-import json, os, psycopg2
+import json, os, psycopg2, base64
 
 app = Flask(__name__)
 CORS(app)
@@ -17,6 +17,7 @@ PSQL_PASS = "s3cur1ty"
 PSQL_DB = "prescriptiva"
 
 app.config["CLIENT_CSV"] = "./csv"
+app.config["CLIENT_JSON"] = "./historic"
 
 @app.route('/')
 def hello_world():
@@ -47,24 +48,21 @@ def extract_tweets():
     conn.commit()
 
     row_id = cur.fetchone()
-    sqlquerys = "UPDATE public.usuario " + \
-                "SET url_json='"+correo+".json' "+ \
-	            "WHERE usuario.correo='"+correo+"';"
-    cur.execute(sqlquerys)
-    conn.commit()
 
-    sqlquery = "INSERT INTO archivo(url,id_user)VALUES (" + "'" + \
-                nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+");"
+    data = ''
+    with open('data.json','r',encoding='utf-8') as f:
+        data=json.loads(f.read())
+    with open("./historic/"+nueva_consulta+".json",'w',encoding='utf-8')as fl:
+        fl.write(data)
+    sqlquery = "INSERT INTO archivo(url,id_user,json)VALUES (" + "'" + \
+                nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"');"
     cur.execute(sqlquery)
     conn.commit()
 
     cur.close()
     conn.close()
-    with open('data.json','r',encoding='utf-8') as f:
-        """data = json.loads(f.read().strip("'<>() ").replace('\'','\"'))
-        with open("./historic/"+correo+".json",'a',encoding='utf-8')as fl:
-            fl.write(json.dumps(data))"""
-        return json.loads(f.read())
+
+    return data
 
 @app.route('/obtener', methods=['GET','POST'])
 def return_stats():
@@ -108,7 +106,7 @@ def consultar():
 
         return jsonify(payload)
     except:
-        return jsonify({'url':"Not Found"})
+        return jsonify([{'url':"Not Found"}])
 
 ##--------------------------Insertar Usuario en base de datos------------------#
 ##Inserta un usuario en la base de datos
@@ -128,23 +126,26 @@ def insertar():
 
     cur = conn.cursor()
     try:
-        sqlquery = "select usuario.id from usuario where usuario.correo="+"'"+correos+"'"+";"
-        cur.execute(sqlquery)
-
-        row=cur.fetchone()
-
-        if not row:
-            sqlquery = "INSERT INTO usuario(nombre, correo, password, id)VALUES (" + "'" + \
-                nombres+"'"+"," + "'"+correos+"'" + ","+"'" + passwords+"'"+", default);"
+        if(nombres is not '' and correos is not '' and passwords is not ''):
+            sqlquery = "select usuario.id from usuario where usuario.correo="+"'"+correos+"'"+";"
             cur.execute(sqlquery)
-            conn.commit()
-            cur.close()
-            conn.close()
-            return jsonify({"Value": "success"})
+
+            row=cur.fetchone()
+
+            if not row:
+                sqlquery = "INSERT INTO usuario(nombre, correo, password, id)VALUES (" + "'" + \
+                    nombres+"'"+"," + "'"+correos+"'" + ","+"'" + passwords+"'"+", default);"
+                cur.execute(sqlquery)
+                conn.commit()
+                cur.close()
+                conn.close()
+                return jsonify({"Value": "success"})
+            else:
+                cur.close()
+                conn.close()
+                return jsonify({"Value": "exist"})
         else:
-            cur.close()
-            conn.close()
-            return jsonify({"Value": "exist"})
+            raise Exception
     except:
         return jsonify({"Value": "failed"})
 
@@ -165,18 +166,32 @@ def insertarArchivo():
 
         cur = conn.cursor()
 
-        sqlquery = "select usuario.id from usuario where usuario.nombre="+"'"+nombres+"'"+";"
-        cur.execute(sqlquery)
+        if(nombres is not '' and nombreFile is not ''):
+            sqlquery = "select usuario.id from usuario where usuario.nombre="+"'"+nombres+"'"+";"
+            cur.execute(sqlquery)
 
-        row_id = cur.fetchone()
-        sqlquerys = "INSERT INTO archivo(url, id_user)VALUES (" + \
-            "'"+nombreFile+"'"+"," + "'"+str(row_id[0])+"'"+");"
-        cur.execute(sqlquerys)
-        conn.commit()
+            row_id = cur.fetchone()
 
-        cur.close()
-        conn.close()
-        return jsonify({"state": "Successfull"})
+            sqlquery = "select archivo.id_user from archivo where archivo.url="+"'"+nombreFile+"'"+";"
+            cur.execute(sqlquery)
+
+            row=cur.fetchone()
+
+            if not row:
+                sqlquerys = "INSERT INTO archivo(url, id_user)VALUES (" + \
+                    "'"+nombreFile+"'"+"," + "'"+str(row_id[0])+"'"+");"
+                cur.execute(sqlquerys)
+                conn.commit()
+
+                cur.close()
+                conn.close()
+                return jsonify({"state": "Successfull"})
+            else:
+                cur.close()
+                conn.close()
+                return jsonify({"Value": "exist"})
+        else:
+            raise Exception
     except:
         return jsonify({"state": "Failed"})
 
@@ -196,11 +211,11 @@ def verificarUsuario():
     try:
 
         cur = conn.cursor()
-        sqlquery = "select usuario.id, usuario.nombre, usuario.password from usuario where usuario.password="+"'"+passwords+"'"+ "AND usuario.correo="+"'"+correos+"'"+ ";"
+        sqlquery = "select usuario.id, usuario.nombre, usuario.password , usuario.correo from usuario where usuario.password="+"'"+passwords+"'"+ "AND usuario.correo="+"'"+correos+"'"+ ";"
         cur.execute(sqlquery)
         rows = cur.fetchone()
 
-        return jsonify({"state": "Successfull", "nombre": rows[1], "id": rows[0]})
+        return jsonify({"state": "Successful", "nombre": rows[1], "correo":rows[3], "id": rows[0]})
         
     except:
          return jsonify({"state": "Failed"})
@@ -217,6 +232,18 @@ def get_csv(csv_id):
     try:
         return send_from_directory(
             app.config["CLIENT_CSV"], filename=filename, as_attachment=True)
+    except :
+        return jsonify({"state": "failed"})
+
+@app.route("/get-json/<csv_id>")
+def get_json(json_id):
+
+    filename = f"{json_id}.json"
+
+    try:
+        data=send_from_directory(app.config["CLIENT_JSON"],filename)
+        enc=data.encode()
+        return base64.encodestring(enc)
     except :
         return jsonify({"state": "failed"})
 
