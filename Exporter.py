@@ -221,7 +221,7 @@ def main(argv):
 	#Se guardan los tweets en el archivo de salida
 			outputFile.flush()
 			print('More %d saved on file...\n' % len(tweets))
-			datos=datosGrafica("./csv/"+outputFileName, h)
+			datos=datosGrafica(outputFileName, h)
 	#Se actualiza un json con los datos de la busqueda
 			with open('data.json','w', encoding='utf-8') as f:
 				json.dump(datos,f)

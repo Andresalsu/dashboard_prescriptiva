@@ -46,10 +46,10 @@ def datosGrafica(filename='output_got', length=0):
     try:
         #Se leen todos los tweets conseguidos dentro de su csv de salida
         archivo=''
-        if('.csv' in filename):
-            archivo=filename
+        if('.csv' in ("./csv/"+filename)):
+            archivo="./csv/"+filename
         else:
-            archivo=filename+'.csv'
+            archivo="./csv/"+filename+'.csv'
         #Se crean arreglos para los sentimientos, los rt, los fv, las menciones y los hashtags
         valoraciones=[]
         retweets=[]

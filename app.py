@@ -31,12 +31,39 @@ def extract_tweets():
     usuarioClave=content['usuarioBusqueda']
     fechaMin=content['fechaMinBusqueda']
     cercania=content['cercaniaBusqueda']
+    correo = content['correo']
 
+    connstr = "host=%s port=%s user=%s password=%s dbname=%s" % (
+        PSQL_HOST, PSQL_PORT, PSQL_USER, PSQL_PASS, PSQL_DB)
+    conn = psycopg2.connect(connstr)
+
+    cur = conn.cursor()
     #Se envia la consulta al script pruebasistema.py
     nueva_consulta=buscarTweets(palabraClave,hashtagClave,usuarioClave,fechaMin,cercania)
 
     #Se devuelven los resultados de todos los tweets encontrados
-    with open('data.json','r') as f:
+    sqlquery = "select usuario.id from usuario where usuario.correo="+"'"+correo+"'"+";"
+    cur.execute(sqlquery)
+    conn.commit()
+
+    row_id = cur.fetchone()
+    sqlquerys = "UPDATE public.usuario " + \
+                "SET url_json='"+correo+".json' "+ \
+	            "WHERE usuario.correo='"+correo+"';"
+    cur.execute(sqlquerys)
+    conn.commit()
+
+    sqlquery = "INSERT INTO archivo(url,id_user)VALUES (" + "'" + \
+                nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+");"
+    cur.execute(sqlquery)
+    conn.commit()
+
+    cur.close()
+    conn.close()
+    with open('data.json','r',encoding='utf-8') as f:
+        """data = json.loads(f.read().strip("'<>() ").replace('\'','\"'))
+        with open("./historic/"+correo+".json",'a',encoding='utf-8')as fl:
+            fl.write(json.dumps(data))"""
         return json.loads(f.read())
 
 @app.route('/obtener', methods=['GET','POST'])
@@ -52,33 +79,36 @@ def return_stats():
 @app.route('/consultar', methods=['POST'])
 def consultar():
 
-    content = request.get_json()
-    nombres = content['nombre']
+    try:
+        content = request.get_json()
+        nombres = content['nombre']
 
-    connstr = "host=%s port=%s user=%s password=%s dbname=%s" % (
-        PSQL_HOST, PSQL_PORT, PSQL_USER, PSQL_PASS, PSQL_DB)
-    conn = psycopg2.connect(connstr)
+        connstr = "host=%s port=%s user=%s password=%s dbname=%s" % (
+            PSQL_HOST, PSQL_PORT, PSQL_USER, PSQL_PASS, PSQL_DB)
+        conn = psycopg2.connect(connstr)
 
-    cur = conn.cursor()
+        cur = conn.cursor()
 
-    sqlquery = "select usuario.id from usuario where usuario.nombre="+"'"+nombres+"'"+";"
-    cur.execute(sqlquery)
-    row_headers = [x[0] for x in cur.description]
-    row = cur.fetchone()
-    sqlquerys = "select archivo.url from archivo where archivo.id_user="+"'"+str(row[0])+"'"+";"
-    cur.execute(sqlquerys)
-    row1=cur.fetchall()
-    payload = []
-    content = {}
-    for result in row1:
-        content = {'url': result[0],
-                   }
-        payload.append(content)
+        sqlquery = "select usuario.id from usuario where usuario.nombre="+"'"+nombres+"'"+";"
+        cur.execute(sqlquery)
+        row_headers = [x[0] for x in cur.description]
+        row = cur.fetchone()
+        sqlquerys = "select archivo.url from archivo where archivo.id_user="+"'"+str(row[0])+"'"+";"
+        cur.execute(sqlquerys)
+        row1=cur.fetchall()
+        payload = []
         content = {}
-    cur.close()
-    conn.close()
+        for result in row1:
+            content = {'url': result[0],
+                    }
+            payload.append(content)
+            content = {}
+        cur.close()
+        conn.close()
 
-    return jsonify(payload)
+        return jsonify(payload)
+    except:
+        return jsonify({'url':"Not Found"})
 
 ##--------------------------Insertar Usuario en base de datos------------------#
 ##Inserta un usuario en la base de datos
@@ -97,23 +127,25 @@ def insertar():
     conn = psycopg2.connect(connstr)
 
     cur = conn.cursor()
-
-    sqlquery = "select usuario.id from usuario where usuario.correo="+"'"+correos+"'"+";"
-    cur.execute(sqlquery)
-
-    row=cur.fetchone()
-
-    if not row:
-        sqlquery = "INSERT INTO usuario(nombre, correo, password, id)VALUES (" + "'" + \
-            nombres+"'"+"," + "'"+correos+"'" + ","+"'" + passwords+"'"+", default);"
+    try:
+        sqlquery = "select usuario.id from usuario where usuario.correo="+"'"+correos+"'"+";"
         cur.execute(sqlquery)
-        conn.commit()
-        cur.close()
-        conn.close()
-        return jsonify({"Value": "success"})
-    else:
-        cur.close()
-        conn.close()
+
+        row=cur.fetchone()
+
+        if not row:
+            sqlquery = "INSERT INTO usuario(nombre, correo, password, id)VALUES (" + "'" + \
+                nombres+"'"+"," + "'"+correos+"'" + ","+"'" + passwords+"'"+", default);"
+            cur.execute(sqlquery)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return jsonify({"Value": "success"})
+        else:
+            cur.close()
+            conn.close()
+            return jsonify({"Value": "exist"})
+    except:
         return jsonify({"Value": "failed"})
 
 ##--------------------------Insertar Archivo en base de datos------------------#
@@ -123,27 +155,30 @@ def insertar():
 #@return: retorna un json con valor succesFull si todo funcionó correctamente
 @app.route('/insertarArchivo', methods=['POST'])
 def insertarArchivo():
-    content = request.get_json()
-    nombres = content['nombre']
-    nombreFile = content['nombreFile']
-    connstr = "host=%s port=%s user=%s password=%s dbname=%s" % (
-        PSQL_HOST, PSQL_PORT, PSQL_USER, PSQL_PASS, PSQL_DB)
-    conn = psycopg2.connect(connstr)
+    try:
+        content = request.get_json()
+        nombres = content['nombre']
+        nombreFile = content['nombreFile']
+        connstr = "host=%s port=%s user=%s password=%s dbname=%s" % (
+            PSQL_HOST, PSQL_PORT, PSQL_USER, PSQL_PASS, PSQL_DB)
+        conn = psycopg2.connect(connstr)
 
-    cur = conn.cursor()
+        cur = conn.cursor()
 
-    sqlquery = "select usuario.id from usuario where usuario.nombre="+"'"+nombres+"'"+";"
-    cur.execute(sqlquery)
+        sqlquery = "select usuario.id from usuario where usuario.nombre="+"'"+nombres+"'"+";"
+        cur.execute(sqlquery)
 
-    row_id = cur.fetchone()
-    sqlquerys = "INSERT INTO archivo(url, id_user)VALUES (" + \
-        "'"+nombreFile+"'"+"," + "'"+str(row_id[0])+"'"+");"
-    cur.execute(sqlquerys)
-    conn.commit()
+        row_id = cur.fetchone()
+        sqlquerys = "INSERT INTO archivo(url, id_user)VALUES (" + \
+            "'"+nombreFile+"'"+"," + "'"+str(row_id[0])+"'"+");"
+        cur.execute(sqlquerys)
+        conn.commit()
 
-    cur.close()
-    conn.close()
-    return jsonify({"state": "Successfull"})
+        cur.close()
+        conn.close()
+        return jsonify({"state": "Successfull"})
+    except:
+        return jsonify({"state": "Failed"})
 
 ##--------------------------Verificar usuario------------------#
 ##Verifica si existe un usuario registrado en la base de datos, atraves de la clave encriptada
@@ -165,9 +200,7 @@ def verificarUsuario():
         cur.execute(sqlquery)
         rows = cur.fetchone()
 
-        if str(rows[2]== passwords):
-
-            return jsonify({"state": "Successfull", "nombre": rows[1], "id": rows[0]})
+        return jsonify({"state": "Successfull", "nombre": rows[1], "id": rows[0]})
         
     except:
          return jsonify({"state": "Failed"})
