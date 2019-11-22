@@ -5,7 +5,7 @@ from flask_cors import CORS, cross_origin
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from pruebasistema import buscarTweets
-import json, os, psycopg2, base64
+import json, os, psycopg2, base64, time
 
 app = Flask(__name__)
 CORS(app)
@@ -54,6 +54,7 @@ def extract_tweets():
         data=json.loads(f.read())
     with open("./historic/"+nueva_consulta+".json",'a+',encoding='utf-8')as fl:
         fl.write(data+'\n')
+    
     sqlquery = "select archivo.json from archivo where archivo.id_user="+"'"+str(row_id[0])+"'"+";"
     cur.execute(sqlquery)
     conn.commit()
@@ -65,8 +66,9 @@ def extract_tweets():
             cur.execute(sqlquery)
             conn.commit()
     except:
-        sqlquery = "INSERT INTO archivo(url,id_user,json)VALUES (" + "'" + \
-                        nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"');"
+        sqlquery = "INSERT INTO archivo(url,id_user,json,fecha)VALUES (" + "'" + \
+                        nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"','"+ \
+                        datetime.datetime.now()+"');"
         cur.execute(sqlquery)
         conn.commit()
 
@@ -102,7 +104,7 @@ def consultar():
         cur.execute(sqlquery)
         row_headers = [x[0] for x in cur.description]
         row = cur.fetchone()
-        sqlquerys = "select archivo.url from archivo where archivo.id_user="+"'"+str(row[0])+"'"+";"
+        sqlquerys = "select archivo.url, archivo.fecha from archivo where archivo.id_user="+"'"+str(row[0])+"'"+";"
         cur.execute(sqlquerys)
         row1=cur.fetchall()
         payload = []
@@ -189,8 +191,9 @@ def insertarArchivo():
             row=cur.fetchone()
 
             if not row:
-                sqlquerys = "INSERT INTO archivo(url, id_user)VALUES (" + \
-                    "'"+nombreFile+"'"+"," + "'"+str(row_id[0])+"'"+");"
+                sqlquerys = "INSERT INTO archivo(url,id_user,json,fecha)VALUES (" + "'" + \
+                        nombreFile.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nombreFile.replace('.csv','')+"','"+ \
+                        datetime.datetime.now()+"');"
                 cur.execute(sqlquerys)
                 conn.commit()
 
@@ -246,15 +249,15 @@ def get_csv(csv_id):
     except :
         return jsonify({"state": "failed"})
 
-@app.route("/get-json/<csv_id>")
+@app.route("/get-json/<json_id>")
 def get_json(json_id):
 
     filename = f"{json_id}.json"
 
     try:
-        data=send_from_directory(app.config["CLIENT_JSON"],filename)
-        enc=data.encode()
-        return base64.encodestring(enc)
+        data=open("./historic/"+filename,"r")
+        enc=data.read().encode()
+        return base64.encodebytes(enc)
     except :
         return jsonify({"state": "failed"})
 
