@@ -110,7 +110,7 @@ def consultar():
         payload = []
         content = {}
         for result in row1:
-            content = {'url': result[0],
+            content = {'url': result[0], 'fecha': result[1]
                     }
             payload.append(content)
             content = {}
