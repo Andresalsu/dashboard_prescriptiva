@@ -5,7 +5,7 @@ from flask_cors import CORS, cross_origin
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from pruebasistema import buscarTweets
-import json, os, psycopg2, base64, time
+import json, os, psycopg2, base64, time, datetime
 
 app = Flask(__name__)
 CORS(app)
