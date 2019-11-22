@@ -147,7 +147,7 @@ def datosGrafica(filename='output_got', length=0):
         'Maximo Rt Muy negativos': maxRtNeg,'Tweet mas Rt':texto_rt, 'Promedio RT': float(promedio_rt), 'Mayor Favorito Muy Positivo':maxFvPos, 
         'Mayor Favorito Tendencia positiva': maxFvTPos, 'Mayor Favorito Tendencia Negativa': maxFvTNeg, 'Mayor Favorito Muy Negativo': maxFvNeg,
         'Tweet mas Fv':texto_fv, 'Promedio Favorito':float(promedio_fv), 'Hashtags populares':hpopulares, 'Menciones populares':mpopulares,
-        'Trama':length, 'Archivo':filename, 'Fecha':datetime.datetime.now()}
+        'Trama':length, 'Archivo':filename, 'Fecha':str(datetime.datetime.now())}
         resultado=json.dumps(a)
         print(resultado)
         return resultado

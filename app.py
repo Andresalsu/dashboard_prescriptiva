@@ -68,7 +68,7 @@ def extract_tweets():
     except:
         sqlquery = "INSERT INTO archivo(url,id_user,json,fecha)VALUES (" + "'" + \
                         nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"','"+ \
-                        datetime.datetime.now()+"');"
+                        str(datetime.datetime.now())+"');"
         cur.execute(sqlquery)
         conn.commit()
 
@@ -193,7 +193,7 @@ def insertarArchivo():
             if not row:
                 sqlquerys = "INSERT INTO archivo(url,id_user,json,fecha)VALUES (" + "'" + \
                         nombreFile.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nombreFile.replace('.csv','')+"','"+ \
-                        datetime.datetime.now()+"');"
+                        str(datetime.datetime.now())+"');"
                 cur.execute(sqlquerys)
                 conn.commit()
 
