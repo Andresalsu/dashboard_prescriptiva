@@ -156,7 +156,7 @@ def main(argv):
 					h=h+1
 				else:
 					h=h-1
-				if(h<500):
+				if(h<501):
 					if(len(textos)>=1):
 	#Cada 100 tweets se ejecuta el clasificador y se guarda en el csv
 						for tex in textos:
@@ -225,7 +225,7 @@ def main(argv):
 	#Se actualiza un json con los datos de la busqueda
 			with open('data.json','w', encoding='utf-8') as f:
 				json.dump(datos,f)
-		if(h<500):
+		if(h<501):
 			got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer)
 		else:
 			raise Exception

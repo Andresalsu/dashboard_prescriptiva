@@ -52,12 +52,23 @@ def extract_tweets():
     data = ''
     with open('data.json','r',encoding='utf-8') as f:
         data=json.loads(f.read())
-    with open("./historic/"+nueva_consulta+".json",'w',encoding='utf-8')as fl:
-        fl.write(data)
-    sqlquery = "INSERT INTO archivo(url,id_user,json)VALUES (" + "'" + \
-                nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"');"
+    with open("./historic/"+nueva_consulta+".json",'a+',encoding='utf-8')as fl:
+        fl.write(data+'\n')
+    sqlquery = "select archivo.json from archivo where archivo.id_user="+"'"+str(row_id[0])+"'"+";"
     cur.execute(sqlquery)
     conn.commit()
+
+    row=cur.fetchone()
+    try:
+        if(row[0] is nueva_consulta.replace('.csv','')):
+            sqlquery = "UPDATE archivo SET archivo.json='"+nueva_consulta.replace('.csv','')+".json' WHERE archivo.id_user="+str(row_id[0])+";"
+            cur.execute(sqlquery)
+            conn.commit()
+    except:
+        sqlquery = "INSERT INTO archivo(url,id_user,json)VALUES (" + "'" + \
+                        nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"');"
+        cur.execute(sqlquery)
+        conn.commit()
 
     cur.close()
     conn.close()
