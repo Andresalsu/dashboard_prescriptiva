@@ -262,8 +262,8 @@ def get_json(json_id):
         data = []
         with open('./historic/'+filename) as f:
             for line in f:
-                data.append(json.loads(line))
-        return jsonify(data)
+                data.append(line)
+        return data[-1]
     except Exception as e:
         print(e)
         return jsonify({"state": "failed"})
