@@ -118,7 +118,8 @@ def consultar():
         conn.close()
 
         return jsonify(payload)
-    except:
+    except Exception as e:
+        print(e)
         return jsonify([{'url':"Not Found"}])
 
 ##--------------------------Insertar Usuario en base de datos------------------#
@@ -207,7 +208,8 @@ def insertarArchivo():
                 return jsonify({"Value": "exist"})
         else:
             raise Exception
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({"state": "Failed"})
 
 ##--------------------------Verificar usuario------------------#
@@ -232,8 +234,9 @@ def verificarUsuario():
 
         return jsonify({"state": "Successful", "nombre": rows[1], "correo":rows[3], "id": rows[0]})
         
-    except:
-         return jsonify({"state": "Failed"})
+    except Exception as e:
+        print(e)
+        return jsonify({"state": "Failed"})
 
 ##--------------------------Descargar Archivo del servidor------------------#
 ##Descarga un archivo disponible en el servidor que está asociado a un usuario
@@ -259,7 +262,8 @@ def get_json(json_id):
         data=open("./historic/"+filename,"r")
         enc=data.read()
         return enc
-    except :
+    except Exception as e:
+        print(e)
         return jsonify({"state": "failed"})
 
 if __name__ == "__main__":
