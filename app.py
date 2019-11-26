@@ -259,9 +259,11 @@ def get_json(json_id):
     filename = f"{json_id}.json"
 
     try:
-        data=open("./historic/"+filename,"r")
-        enc=data.read()
-        return enc
+        data = []
+        with open('./historic/'+filename) as f:
+            for line in f:
+                data.append(json.loads(line))
+        return jsonify(data)
     except Exception as e:
         print(e)
         return jsonify({"state": "failed"})
