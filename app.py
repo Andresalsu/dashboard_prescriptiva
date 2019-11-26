@@ -147,7 +147,7 @@ def insertar():
 
             if not row:
                 sqlquery = "INSERT INTO usuario(nombre, correo, password, id)VALUES (" + "'" + \
-                    nombres+"'"+"," + "'"+correos+"'" + ","+"'" + passwords+"'"+", default);"
+                    nombres+"'"+"," + "'"+correos+"'" + ","+"'" + passwords+"'"+", (SELECT MAX(id)+1 FROM usuario));"
                 cur.execute(sqlquery)
                 conn.commit()
                 cur.close()
@@ -159,7 +159,8 @@ def insertar():
                 return jsonify({"Value": "exist"})
         else:
             raise Exception
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({"Value": "failed"})
 
 ##--------------------------Insertar Archivo en base de datos------------------#
