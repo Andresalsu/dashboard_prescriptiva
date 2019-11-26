@@ -10,10 +10,10 @@ import json, os, psycopg2, base64, time, datetime
 app = Flask(__name__)
 CORS(app)
 
-PSQL_HOST = "192.168.96.38"
+PSQL_HOST = "prescriptiva.cwb5ajusgrsr.us-east-1.rds.amazonaws.com"
 PSQL_PORT = "5432"
-PSQL_USER = "loken"
-PSQL_PASS = "s3cur1ty"
+PSQL_USER = "carvajal"
+PSQL_PASS = "Carvajal2019"
 PSQL_DB = "prescriptiva"
 
 app.config["CLIENT_CSV"] = "./csv"
@@ -256,8 +256,8 @@ def get_json(json_id):
 
     try:
         data=open("./historic/"+filename,"r")
-        enc=data.read().encode()
-        return base64.encodebytes(enc)
+        enc=data.read()
+        return enc
     except :
         return jsonify({"state": "failed"})
 
