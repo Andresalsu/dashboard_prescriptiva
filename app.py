@@ -59,20 +59,22 @@ def extract_tweets():
     cur.execute(sqlquery)
 
     row=cur.fetchall()
-    try:
-        #for j in row:
-            """if(nueva_consulta.replace('.csv','') in j[2]):
-                sqlquery = "UPDATE archivo SET archivo.json='"+nueva_consulta.replace('.csv','')+".json' WHERE archivo.id_user="+str(row_id[0])+";"
-                cur.execute(sqlquery)
-                conn.commit()
-            else:"""
-        sqlquery = "INSERT INTO archivo(url,id_user,json,fecha)VALUES (" + "'" + \
-                    nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"','"+ \
-                    str(datetime.datetime.now())+"');"
+    if len(row)>0:
+        for j in row:
+            if(nueva_consulta.replace('.csv','') in j[0]):
+                sqlquery = "UPDATE archivo SET json='"+nueva_consulta.replace('.csv','')+"' WHERE archivo.id_user="+str(row_id[0])+" and archivo.url='"+nueva_consulta.replace('.csv','')+"';"
+            else:
+                sqlquery = "INSERT INTO archivo(url,id_user,json,fecha)VALUES (" + "'" + \
+                            nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"','"+ \
+                            str(datetime.datetime.now())+"');"
         cur.execute(sqlquery)
         conn.commit()
-    except:
-        print("Ha ocurrido un error")
+    else:
+        sqlquery = "INSERT INTO archivo(url,id_user,json,fecha)VALUES (" + "'" + \
+                            nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"','"+ \
+                            str(datetime.datetime.now())+"');"
+        cur.execute(sqlquery)
+        conn.commit()
 
     cur.close()
     conn.close()
