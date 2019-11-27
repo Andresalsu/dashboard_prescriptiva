@@ -58,18 +58,21 @@ def extract_tweets():
     sqlquery = "select archivo.json from archivo where archivo.id_user="+"'"+str(row_id[0])+"'"+";"
     cur.execute(sqlquery)
 
-    row=cur.fetchone()
-    if row == None:
+    row=cur.fetchall()
+    try:
+        #for j in row:
+            """if(nueva_consulta.replace('.csv','') in j[2]):
+                sqlquery = "UPDATE archivo SET archivo.json='"+nueva_consulta.replace('.csv','')+".json' WHERE archivo.id_user="+str(row_id[0])+";"
+                cur.execute(sqlquery)
+                conn.commit()
+            else:"""
         sqlquery = "INSERT INTO archivo(url,id_user,json,fecha)VALUES (" + "'" + \
-                        nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"','"+ \
-                        str(datetime.datetime.now())+"');"
+                    nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"','"+ \
+                    str(datetime.datetime.now())+"');"
         cur.execute(sqlquery)
         conn.commit()
-
-    else:
-        sqlquery = "UPDATE archivo SET archivo.json='"+nueva_consulta.replace('.csv','')+"' WHERE archivo.id_user="+str(row_id[0])+";"
-        cur.execute(sqlquery)
-        conn.commit()
+    except:
+        print("Ha ocurrido un error")
 
     cur.close()
     conn.close()
