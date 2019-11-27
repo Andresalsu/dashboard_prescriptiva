@@ -68,8 +68,8 @@ def extract_tweets():
 
     else:
         sqlquery = "UPDATE archivo SET archivo.json='"+nueva_consulta.replace('.csv','')+".json' WHERE archivo.id_user="+str(row_id[0])+";"
-            cur.execute(sqlquery)
-            conn.commit()
+        cur.execute(sqlquery)
+        conn.commit()
 
     cur.close()
     conn.close()
