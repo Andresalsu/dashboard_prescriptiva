@@ -59,7 +59,7 @@ def extract_tweets():
     cur.execute(sqlquery)
 
     row=cur.fetchone()
-    if not row:
+    if row == None:
         sqlquery = "INSERT INTO archivo(url,id_user,json,fecha)VALUES (" + "'" + \
                         nueva_consulta.replace('.csv','')+"'"+"," + "'"+str(row_id[0])+"'"+",'"+nueva_consulta.replace('.csv','')+"','"+ \
                         str(datetime.datetime.now())+"');"
@@ -67,7 +67,7 @@ def extract_tweets():
         conn.commit()
 
     else:
-        sqlquery = "UPDATE archivo SET archivo.json='"+nueva_consulta.replace('.csv','')+".json' WHERE archivo.id_user="+str(row_id[0])+";"
+        sqlquery = "UPDATE archivo SET archivo.json='"+nueva_consulta.replace('.csv','')+"' WHERE archivo.id_user="+str(row_id[0])+";"
         cur.execute(sqlquery)
         conn.commit()
 
