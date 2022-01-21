@@ -13,4 +13,4 @@ langdetect==1.0.7
 pyquery==1.4.1
 textblob==0.15.3
 Unidecode==1.1.1
-IPython==7.9.0
+IPython==7.16.3
